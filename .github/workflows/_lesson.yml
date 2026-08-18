@@ -28,6 +28,7 @@ on:
 jobs:
   find_exercise:
     name: Find Exercise Issue
+    if: ${{ github.repository != 'ragmha/build-your-harness' }}
     permissions:
       issues: read
     uses: skills/exercise-toolkit/.github/workflows/find-exercise-issue.yml@eca07ac3f4900e6112150366ac9e89cdf09e30e6 # v0.9.1

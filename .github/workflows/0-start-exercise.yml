@@ -15,7 +15,7 @@ jobs:
       contents: write
       actions: write
       issues: write
-    if: ${{ !github.event.repository.is_template }}
+    if: ${{ !github.event.repository.is_template && github.repository != 'ragmha/build-your-harness' }}
     name: Start Exercise
     uses: skills/exercise-toolkit/.github/workflows/start-exercise.yml@eca07ac3f4900e6112150366ac9e89cdf09e30e6 # v0.9.1
     with:
