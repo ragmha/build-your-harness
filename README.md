@@ -15,7 +15,7 @@ The central idea is that **agent systems are workflow systems**: the model propo
   - Basic TypeScript knowledge.
   - A GitHub account with Actions enabled.
   - Familiarity with repositories, issues, commits, and pushes. If those are new, first try [Introduction to GitHub](https://github.com/skills/introduction-to-github).
-- **Included toolchain**: Bun 1.3.14, TypeScript 7.0.2, Node.js 24.19.0 LTS, and npm 12.0.2.
+- **Included toolchain**: Bun 1.3.14, TypeScript 7.0.2, and Node.js 24.19.0 LTS.
 - **How long**: About 8 hours.
 
 In this exercise, you will:
@@ -50,7 +50,7 @@ This repository includes a Dev Container, so you can run the exercise in a brows
 
 1. In your copied repository, select **Code**.
 2. Open the **Codespaces** tab and select **Create codespace on main**.
-3. Wait for the setup command to finish. It installs the pinned npm and Bun versions, restores dependencies, and confirms the starter type-checks.
+3. Wait for the setup command to finish. It installs the pinned Bun version, restores dependencies, and confirms the starter type-checks.
 4. Open the exercise issue and begin Step 1.
 
 Codespaces usage counts toward your account's included allowance.
@@ -59,24 +59,19 @@ Codespaces usage counts toward your account's included allowance.
 
 The repository pins its development environment in:
 
-- `.nvmrc`: Node.js 24.19.0 LTS.
-- `.npmrc`: strict engine checks and reproducible package-save defaults.
 - `package.json`: Bun 1.3.14, TypeScript 7.0.2, and supported engine ranges.
-- `.devcontainer/devcontainer.json`: the same Node, npm, Bun, extensions, install, and type-check setup used by Codespaces.
+- `.devcontainer/devcontainer.json`: the same Node, Bun, extensions, install, and type-check setup used by Codespaces.
 
 To use the Dev Container locally, install [Docker](https://docs.docker.com/get-docker/), [VS Code](https://code.visualstudio.com/), and the [Dev Containers extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers). Clone your copied repository, open it in VS Code, and select **Dev Containers: Reopen in Container**.
 
-To work without a container:
+To work without a container, install [Bun 1.3.14](https://bun.sh/docs/installation), then run:
 
 ```bash
-nvm install
-nvm use
-npm install --global npm@12.0.2 bun@1.3.14
 bun install --frozen-lockfile
 bun run typecheck
 ```
 
-Use Bun—not npm—to install dependencies and run project scripts. npm is pinned only to provide a consistent Node.js toolchain and bootstrap Bun when needed.
+Use Bun—not npm—to install dependencies and run project scripts.
 
 <details>
 <summary>Having trouble?</summary><br/>
