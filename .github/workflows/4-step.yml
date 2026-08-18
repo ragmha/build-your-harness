@@ -1,0 +1,23 @@
+name: Step 4
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+jobs:
+  lesson:
+    permissions:
+      actions: write
+      contents: read
+      issues: write
+    uses: ./.github/workflows/_lesson.yml
+    with:
+      step-number: 4
+      next-step-number: 5
+      current-workflow: "Step 4"
+      next-workflow: "Step 5"
+      next-step-file: ".github/steps/5-step.md"
+      grade-command: "bun run grade:step4"
+      grade-description: "Event store, reducer, checkpoint, and recovery tests"

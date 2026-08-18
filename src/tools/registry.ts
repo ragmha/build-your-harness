@@ -5,11 +5,15 @@ import { HarnessError } from "../core/errors";
 
 export interface ToolContext {
   signal: AbortSignal;
+  runId?: string;
+  toolCallId?: string;
+  idempotencyKey?: string;
 }
 
 export interface Tool<TInput, TOutput> {
   name: string;
   description: string;
+  effect?: "read" | "write";
   schema: ZodType<TInput>;
   execute(input: TInput, context: ToolContext): Promise<TOutput> | TOutput;
 }
@@ -33,6 +37,14 @@ export class ToolRegistry {
       description: tool.description,
       inputSchema: zodToJsonSchema(tool.schema) as Record<string, unknown>,
     }));
+  }
+
+  effectOf(name: string): "read" | "write" {
+    const tool = this.#tools.get(name);
+    if (!tool) {
+      throw new HarnessError("UNKNOWN_TOOL", `Unknown tool: ${name}`);
+    }
+    return tool.effect ?? "read";
   }
 
   async execute(name: string, input: unknown, context: ToolContext): Promise<unknown> {

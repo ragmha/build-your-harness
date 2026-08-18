@@ -2,6 +2,11 @@ import { describe, expect, test } from "bun:test";
 import { resolve } from "node:path";
 import { loadEvaluationCases, runEvaluations } from "../src/evals/run-evals";
 import { loadSkill, renderSkillPrompt } from "../src/skills/load-skill";
+import { projectContext } from "../src/context/project-context";
+import { runAgent } from "../src/core/agent";
+import type { ModelRequest } from "../src/core/contracts";
+import { ToolRegistry } from "../src/tools/registry";
+import { lookupCodeTool } from "../src/tools/lookup-code";
 
 const root = resolve(import.meta.dir, "..");
 
@@ -47,6 +52,112 @@ describe("Step 3: skills and evaluations", () => {
       passed: false,
       expectedOutput: "expected",
       actualOutput: "actual",
+    });
+  });
+
+  test("projects instructions, sorted facts, and recent history", () => {
+    const projection = projectContext(
+      [
+        { role: "user", content: "old" },
+        { role: "assistant", content: "middle" },
+        { role: "user", content: "new" },
+      ],
+      {
+        instructions: "Follow the synthetic skill.",
+        facts: { zone: "test", account: "demo" },
+        historyMessageTarget: 2,
+      },
+    );
+
+    expect(projection.messages).toEqual([
+      { role: "system", content: "Follow the synthetic skill." },
+      {
+        role: "system",
+        content: "Known facts:\naccount: demo\nzone: test",
+      },
+      { role: "assistant", content: "middle" },
+      { role: "user", content: "new" },
+    ]);
+    expect(projection.includedHistoryMessages).toBe(2);
+    expect(projection.omittedHistoryMessages).toBe(1);
+  });
+
+  test("never splits a tool call from its contiguous results", () => {
+    const projection = projectContext(
+      [
+        { role: "user", content: "old" },
+        {
+          role: "assistant",
+          content: "",
+          toolCalls: [
+            { id: "call-1", name: "lookup", arguments: { code: "A1" } },
+          ],
+        },
+        {
+          role: "tool",
+          content: '{"label":"Alpha"}',
+          toolCallId: "call-1",
+          name: "lookup",
+        },
+        { role: "user", content: "summarize" },
+      ],
+      { historyMessageTarget: 2 },
+    );
+
+    expect(projection.messages.map((message) => message.role)).toEqual([
+      "assistant",
+      "tool",
+      "user",
+    ]);
+    expect(projection.includedHistoryMessages).toBe(3);
+    expect(projection.omittedHistoryMessages).toBe(1);
+  });
+
+  test("reprojects context after each tool result", async () => {
+    const requests: ModelRequest[] = [];
+    const responses = [
+      {
+        content: "",
+        toolCalls: [
+          {
+            id: "call-context",
+            name: "lookup_code",
+            arguments: { code: "alpha" },
+          },
+        ],
+      },
+      { content: "done" },
+    ];
+    await runAgent(
+      {
+        async complete(request) {
+          requests.push(structuredClone(request));
+          return responses.shift() ?? { content: "unexpected" };
+        },
+      },
+      new ToolRegistry().register(lookupCodeTool),
+      [{ role: "user", content: "look up alpha" }],
+      {
+        context: {
+          instructions: "Synthetic instructions",
+          historyMessageTarget: 2,
+        },
+      },
+    );
+
+    expect(requests[0]?.messages).toEqual([
+      { role: "system", content: "Synthetic instructions" },
+      { role: "user", content: "look up alpha" },
+    ]);
+    expect(requests[1]?.messages.map((message) => message.role)).toEqual([
+      "system",
+      "assistant",
+      "tool",
+    ]);
+    expect(requests[1]?.messages.at(-1)).toMatchObject({
+      role: "tool",
+      toolCallId: "call-context",
+      content: '{"found":true,"value":"Alpha is the first synthetic entry."}',
     });
   });
 });

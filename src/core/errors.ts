@@ -3,7 +3,13 @@ export type HarnessErrorCode =
   | "INVALID_ARGUMENTS"
   | "MAX_STEPS"
   | "ABORTED"
-  | "MODEL_EXHAUSTED";
+  | "MODEL_EXHAUSTED"
+  | "RUN_EXISTS"
+  | "RUN_NOT_FOUND"
+  | "VERSION_CONFLICT"
+  | "DUPLICATE_TOOL_CALL"
+  | "APPROVAL_NOT_FOUND"
+  | "APPROVAL_CONFLICT";
 
 export class HarnessError extends Error {
   constructor(

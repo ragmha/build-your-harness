@@ -10,22 +10,25 @@ You built a small AI agent harness from first principles without an agent framew
 - Implemented a bounded model/tool loop with cancellation, timeouts, typed failures, and trace events.
 - Loaded reusable skill instructions and references.
 - Ran deterministic evaluations and emitted a machine-readable JSON report.
+- Projected bounded model context without confusing it with durable history.
+- Replayed semantic events through a reducer and recovered from checkpoints.
+- Persisted policy decisions and retried a synthetic effect with a stable idempotency key.
+- Paused for durable approval and resumed without duplicate execution.
 
 ### The architecture you now understand
 
 ```text
-messages -> model adapter -> response
-                    |
-                    v
-             validated tool call
-                    |
-                    v
-             tool result message
-                    |
-                    +----> model adapter
+context -> model -> proposed call -> policy -> validated tool
+   ^                                  |             |
+   |                                  v             v
+history <- reducer <- durable events <-+-------- result
+                       |
+                 checkpoint/store
+                       |
+                  restart/resume
 ```
 
-Frameworks can add persistence, orchestration, hosted tools, and provider integrations, but they still build on these same primitives.
+Frameworks can add databases, distributed leases, hosted tools, and provider integrations, but they still build on these same primitives.
 
 ### From seams to plugins
 
@@ -41,18 +44,22 @@ A dynamic plugin loader is deliberately outside this exercise. Add one only when
 
 ### Production failure modes to recognize
 
-You deliberately kept this exercise small, but you can now identify the next harness responsibilities:
+You implemented each responsibility with deterministic in-memory components. In production, examine these harder boundaries:
 
-- **Durability**: checkpoint completed model and tool steps so a restart does not lose progress.
-- **Idempotency**: prevent a retried tool call from repeating an irreversible side effect.
-- **Context hydration**: separate state, history, and the token-budgeted context for one turn.
-- **Policy and approval**: gate privileged tools before execution; never treat a blocked function call as durable human-in-the-loop.
-- **Recovery**: represent pause, failure, retry, and resume as explicit workflow states.
+- **Durability**: replace the in-memory store with transactional storage and define event-schema migrations.
+- **Idempotency**: verify each external destination's key scope, retention, and conflict behavior.
+- **Context hydration**: replace the message-count budget with measured tokens, redaction, and relevance policies.
+- **Policy and approval**: authenticate approvers, expire requests, revoke stale grants, and audit decisions.
+- **Recovery**: add leases, backoff, poison-event handling, compensation, and operational alerts.
 
 ### Go further
 
 - Add another harmless read-only tool and evaluation case.
 - Add a provider adapter behind the existing `ModelAdapter` interface.
 - Compare exact-match evaluation with rubric or property-based scoring.
-- Add an append-only event log, deterministic checkpoints, and idempotency keys without changing the model contract.
+- Replace the in-memory store with a transactional adapter and test event-schema migration.
 - Review [Bun testing](https://bun.sh/docs/test), [Zod](https://zod.dev/), [JSON Schema](https://json-schema.org/draft/2020-12), and the optional [MCP tools specification](https://modelcontextprotocol.io/specification/latest/server/tools).
+
+### Optional: compare one SDK adapter
+
+Implement one ungraded adapter behind `ModelAdapter` using a provider or SDK you already have access to. Keep `ScriptedModel` for every automated test, load credentials only from the environment, and compare how the SDK maps messages, tool schemas, tool calls, cancellation, and errors. Do not move policy, validation, durability, or approval into the adapter; those remain harness responsibilities.

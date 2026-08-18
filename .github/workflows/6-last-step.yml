@@ -1,4 +1,4 @@
-name: Step 3
+name: Step 6
 
 on:
   workflow_dispatch:
@@ -74,7 +74,7 @@ jobs:
       - name: Run complete test suite
         id: tests
         continue-on-error: true
-        run: bun test
+        run: bun run grade:step6
 
       - name: Generate evaluation report
         id: eval
@@ -90,7 +90,7 @@ jobs:
           edit-mode: replace
           file: exercise-toolkit/markdown-templates/step-feedback/step-results-table.md
           vars: |
-            step_number: 3
+            step_number: 6
             results_table:
               - description: "Strict TypeScript type-check"
                 passed: ${{ steps.typecheck.outcome == 'success' }}
@@ -140,14 +140,14 @@ jobs:
           file: ${{ env.REVIEW_FILE }}
 
   disable_current_workflow:
-    name: Disable Step 3
+    name: Disable Step 6
     needs: [post_review_content]
     runs-on: ubuntu-latest
     permissions:
       actions: write
 
     steps:
-      - name: Disable Step 3
+      - name: Disable Step 6
         run: gh workflow disable "${{ github.workflow }}" --repo "${{ github.repository }}"
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
