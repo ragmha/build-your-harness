@@ -2,17 +2,17 @@ name: Step 2
 
 on:
   workflow_dispatch:
-  # Common event triggers: pull_request, push, issues, issue_comment (feel free to experiment)
-  # Docs: https://docs.github.com/en/actions/using-workflows/events-that-trigger-workflows
-  # Example:
-  # pull_request:
-  #   branches:
-  #     - main
-  #   types:
-  #     - closed
+  push:
+    branches:
+      - main
+    paths:
+      - "src/core/agent.ts"
+      - "src/tools/registry.ts"
+      - "src/tools/lookup-code.ts"
+      - "tests/step2.test.ts"
 
 permissions:
-  contents: write
+  contents: read
   actions: write
   issues: write
 
@@ -24,9 +24,8 @@ jobs:
     name: Find Exercise Issue
     uses: skills/exercise-toolkit/.github/workflows/find-exercise-issue.yml@v0.9.1
 
-  # This job is optional. We often call it a "grading job". If the step is not graded, remove it.
   check_step_work:
-    name: Check step work
+    name: Grade Step 2
     runs-on: ubuntu-latest
     needs: [find_exercise]
     env:
@@ -44,7 +43,7 @@ jobs:
           path: exercise-toolkit
           ref: v0.9.1
 
-      - name: Find last comment
+      - name: Find progress comment
         id: find-last-comment
         uses: peter-evans/find-comment@v4
         with:
@@ -52,7 +51,7 @@ jobs:
           issue-number: ${{ env.ISSUE_NUMBER }}
           direction: last
 
-      - name: Update comment - checking work
+      - name: Show checking status
         uses: GrantBirki/comment@v2.1.1
         with:
           repository: ${{ env.ISSUE_REPOSITORY }}
@@ -61,26 +60,25 @@ jobs:
           file: exercise-toolkit/markdown-templates/step-feedback/checking-work.md
           edit-mode: replace
 
-      # START: Check practical exercise
-
-      # replace-me: Example of a grading check. You can add more checks as needed.
-      - name: Check if README file exists
-        id: check-file-exists
-        continue-on-error: true
-        uses: skills/exercise-toolkit/actions/file-exists@v0.9.1
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@v2
         with:
-          file: README.md
+          bun-version: 1.2.5
 
-      # replace-me: Example of a grading check. You can add more checks as needed.
-      - name: Check for keyphrase in README.md
-        id: check-for-keyphrase
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Type-check harness
+        id: typecheck
         continue-on-error: true
-        uses: skills/action-keyphrase-checker@v1
-        with:
-          text-file: README.md
-          keyphrase: Installation guide
+        run: bun run typecheck
 
-      - name: Update comment - step results
+      - name: Test tools and agent loop
+        id: tests
+        continue-on-error: true
+        run: bun run grade:step2
+
+      - name: Post Step 2 results
         uses: GrantBirki/comment@v2.1.1
         with:
           repository: ${{ env.ISSUE_REPOSITORY }}
@@ -91,22 +89,18 @@ jobs:
           vars: |
             step_number: 2
             results_table:
-              - description: "Checked if README.md file exists"
-                passed: ${{ steps.check-file-exists.outcome == 'success' }}
-              - description: "Checked for Installation guide in README.md"
-                passed: ${{ steps.check-for-keyphrase.outcome == 'success' }}
+              - description: "Strict TypeScript type-check"
+                passed: ${{ steps.typecheck.outcome == 'success' }}
+              - description: "Tool validation and bounded-loop tests"
+                passed: ${{ steps.tests.outcome == 'success' }}
 
-      # Add more checks as needed
-
-      # END: Check practical exercise
-
-      - name: Fail job if not all checks passed
-        if: contains(steps.*.outcome, 'failure')
+      - name: Require all checks
+        if: steps.typecheck.outcome != 'success' || steps.tests.outcome != 'success'
         run: exit 1
 
   post_next_step_content:
-    name: Post next step content
-    needs: [find_exercise] # if check_step_work then "needs: [find_exercise, check_step_work]"
+    name: Post Step 3
+    needs: [find_exercise, check_step_work]
     runs-on: ubuntu-latest
     env:
       ISSUE_REPOSITORY: ${{ github.repository }}
@@ -123,7 +117,7 @@ jobs:
           path: exercise-toolkit
           ref: v0.9.1
 
-      - name: Create comment - step finished
+      - name: Post transition
         uses: GrantBirki/comment@v2.1.1
         with:
           repository: ${{ env.ISSUE_REPOSITORY }}
@@ -132,23 +126,23 @@ jobs:
           vars: |
             next_step_number: 3
 
-      - name: Create comment - add step content
+      - name: Post Step 3
         uses: GrantBirki/comment@v2.1.1
         with:
           repository: ${{ env.ISSUE_REPOSITORY }}
           issue-number: ${{ env.ISSUE_NUMBER }}
           file: ${{ env.STEP_3_FILE }}
 
-      - name: Create comment - watching for progress
+      - name: Post progress watcher
         uses: GrantBirki/comment@v2.1.1
         with:
           repository: ${{ env.ISSUE_REPOSITORY }}
           issue-number: ${{ env.ISSUE_NUMBER }}
           file: exercise-toolkit/markdown-templates/step-feedback/watching-for-progress.md
 
-      - name: Disable current workflow and enable next one
+      - name: Advance workflows
         run: |
-          gh workflow disable "${{github.workflow}}"
+          gh workflow disable "${{ github.workflow }}"
           gh workflow enable "Step 3"
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

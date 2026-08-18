@@ -1,11 +1,10 @@
-name: Step 0 # Start Exercise
+name: Step 0
 
 on:
   workflow_dispatch:
-  # NOTE: Make sure the repository is a template before enabling this trigger.
-  # push:
-  #   branches:
-  #     - main
+  push:
+    branches:
+      - main
 
 permissions:
   contents: write
@@ -17,16 +16,15 @@ env:
 
 jobs:
   start_exercise:
-    if: |
-      !github.event.repository.is_template
+    if: ${{ !github.event.repository.is_template }}
     name: Start Exercise
     uses: skills/exercise-toolkit/.github/workflows/start-exercise.yml@v0.9.1
     with:
-      exercise-title: "(replace-me: Exercise title)"
-      intro-message: "(replace-me: Brief one line introduction message for the exercise)"
+      exercise-title: "Build Your Agent Harness"
+      intro-message: "Build a deterministic, provider-neutral AI agent harness from first principles with TypeScript and Bun."
 
   post_next_step_content:
-    name: Post next step content
+    name: Post Step 1
     runs-on: ubuntu-latest
     needs: [start_exercise]
     env:
@@ -46,7 +44,7 @@ jobs:
           path: exercise-toolkit
           ref: v0.9.1
 
-      - name: Create comment - add step content
+      - name: Post Step 1
         uses: GrantBirki/comment@v2.1.1
         with:
           repository: ${{ env.ISSUE_REPOSITORY }}
@@ -56,15 +54,16 @@ jobs:
             login: ${{ github.actor }}
             full_repo_name: ${{ github.repository }}
 
-      - name: Create comment - watching for progress
+      - name: Post progress watcher
         uses: GrantBirki/comment@v2.1.1
         with:
           repository: ${{ env.ISSUE_REPOSITORY }}
           issue-number: ${{ env.ISSUE_NUMBER }}
           file: exercise-toolkit/markdown-templates/step-feedback/watching-for-progress.md
 
-      - name: Enable next step workflow
+      - name: Advance workflows
         run: |
+          gh workflow disable "${{ github.workflow }}"
           gh workflow enable "Step 1"
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -1,37 +1,23 @@
-# Compiled source #
-###################
-*.com
-*.class
-*.dll
-*.exe
-*.o
-*.so
+# Dependencies and caches
+node_modules/
+.bun/
+*.tsbuildinfo
 
-# Packages #
-############
-# it's better to unpack these files and commit the raw source
-# git has its own built in compression methods
-*.7z
-*.dmg
-*.gz
-*.iso
-*.jar
-*.rar
-*.tar
-*.zip
+# Build and coverage output
+dist/
+coverage/
 
-# Logs and databases #
-######################
+# Generated evaluation reports
+reports/
+
+# Logs and local environment
 *.log
-*.sql
-*.sqlite
+.env
+.env.*
+!.env.example
 
-# OS generated files #
-######################
+# Editors and operating systems
 .DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db
 Thumbs.db
+.idea/
+.vscode/

@@ -1,16 +1,46 @@
-## Review
+## Congratulations!
 
-_Congratulations, you've completed this exercise and learned a lot about (replace-me: feature/product that was taught in this exercise)
+You built a small AI agent harness from first principles without an agent framework or model API.
 
-<img src="https://octodex.github.com/images/jetpacktocat.png" alt="celebrate" width=200 align=right>
+### What you accomplished
 
-Here's a recap of your accomplishments:
+- Defined provider-neutral messages, model responses, and tool call contracts.
+- Built a deterministic model adapter for secret-free testing.
+- Added an allowlisted, Zod-validated tool registry.
+- Implemented a bounded model/tool loop with cancellation, timeouts, typed failures, and trace events.
+- Loaded reusable skill instructions and references.
+- Ran deterministic evaluations and emitted a machine-readable JSON report.
 
-- (replace-me: Accomplishment #1)
-- (replace-me: Accomplishment #N)
+### The architecture you now understand
 
-### What's next?
+```text
+messages -> model adapter -> response
+                    |
+                    v
+             validated tool call
+                    |
+                    v
+             tool result message
+                    |
+                    +----> model adapter
+```
 
-- (replace-me: Natural follow up Skills exercise - if there is one)
-- (replace-me: Documentation link to learn more about the feature)
-- (replace-me: Other resources or calls to action)
+Frameworks can add persistence, orchestration, hosted tools, and provider integrations, but they still build on these same primitives.
+
+### Production failure modes to recognize
+
+You deliberately kept this exercise small, but you can now identify the next harness responsibilities:
+
+- **Durability**: checkpoint completed model and tool steps so a restart does not lose progress.
+- **Idempotency**: prevent a retried tool call from repeating an irreversible side effect.
+- **Context hydration**: separate state, history, and the token-budgeted context for one turn.
+- **Policy and approval**: gate privileged tools before execution; never treat a blocked function call as durable human-in-the-loop.
+- **Recovery**: represent pause, failure, retry, and resume as explicit workflow states.
+
+### Go further
+
+- Add another harmless read-only tool and evaluation case.
+- Add a provider adapter behind the existing `ModelAdapter` interface.
+- Compare exact-match evaluation with rubric or property-based scoring.
+- Add an append-only event log, deterministic checkpoints, and idempotency keys without changing the model contract.
+- Review [Bun testing](https://bun.sh/docs/test), [Zod](https://zod.dev/), and [tool-calling concepts](https://platform.openai.com/docs/guides/function-calling).

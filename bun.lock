@@ -1,0 +1,32 @@
+{
+  "lockfileVersion": 2,
+  "configVersion": 1,
+  "workspaces": {
+    "": {
+      "name": "build-your-harness",
+      "dependencies": {
+        "zod": "^3.24.2",
+        "zod-to-json-schema": "^3.24.5",
+      },
+      "devDependencies": {
+        "@types/bun": "^1.2.5",
+        "typescript": "^5.8.2",
+      },
+    },
+  },
+  "packages": {
+    "@types/bun": ["@types/bun@1.3.14", "https://registry.npmjs.org/@types/bun/-/bun-1.3.14.tgz", { "dependencies": { "bun-types": "1.3.14" } }, "sha1-vYtECRmiWHrd4xGmF6kgTzS4qMI="],
+
+    "@types/node": ["@types/node@26.2.0", "https://registry.npmjs.org/@types/node/-/node-26.2.0.tgz", { "dependencies": { "undici-types": "~8.3.0" } }, "sha1-Wkh1qGL9qP3Ffej6pXm7gey6FoU="],
+
+    "bun-types": ["bun-types@1.3.14", "https://registry.npmjs.org/bun-types/-/bun-types-1.3.14.tgz", { "dependencies": { "@types/node": "*" } }, "sha1-qP4lOfxcWa5F8f3BjfyfjV6ruvQ="],
+
+    "typescript": ["typescript@5.9.3", "https://registry.npmjs.org/typescript/-/typescript-5.9.3.tgz", { "bin": { "tsc": "./bin/tsc", "tsserver": "./bin/tsserver" } }, "sha1-W09Z4VMQqxeiFvXWz1PuR27eZw8="],
+
+    "undici-types": ["undici-types@8.3.0", "https://registry.npmjs.org/undici-types/-/undici-types-8.3.0.tgz", {}, "sha1-ROn8nzJEZIzeo15Pm7LWgelBCAk="],
+
+    "zod": ["zod@3.25.76", "https://registry.npmjs.org/zod/-/zod-3.25.76.tgz", {}, "sha1-JoQcP2/SKmonYOfMtxkXl2hHHjQ="],
+
+    "zod-to-json-schema": ["zod-to-json-schema@3.25.2", "https://registry.npmjs.org/zod-to-json-schema/-/zod-to-json-schema-3.25.2.tgz", { "peerDependencies": { "zod": "^3.25.28 || ^4" } }, "sha1-P6eZp7rdVUVBRy+2WEP9xGCy5ao="],
+  }
+}
