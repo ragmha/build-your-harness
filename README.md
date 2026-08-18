@@ -1,5 +1,7 @@
 # Build Your Agent Harness
 
+_Build and recover a provider-neutral AI agent harness from first principles in about eight hours._
+
 Build a small, provider-neutral AI agent harness from first principles with TypeScript and Bun. The exercise uses a deterministic scripted model, so it needs no API key, secrets, or network model calls.
 
 The central idea is that **agent systems are workflow systems**: the model proposes the next semantic step, while the harness owns state, execution, policy, limits, errors, and observability.
@@ -12,6 +14,7 @@ The central idea is that **agent systems are workflow systems**: the model propo
 - **Prerequisites**:
   - Basic TypeScript knowledge.
   - A GitHub account with Actions enabled.
+  - Familiarity with repositories, issues, commits, and pushes. If those are new, first try [Introduction to GitHub](https://github.com/skills/introduction-to-github).
 - **Included toolchain**: Bun 1.3.14, TypeScript 7.0.2, Node.js 24.19.0 LTS, and npm 12.0.2.
 - **How long**: About 8 hours.
 
@@ -79,8 +82,11 @@ Use Bun—not npm—to install dependencies and run project scripts. npm is pinn
 <summary>Having trouble?</summary><br/>
 
 - Create a public repository so the exercise can use free GitHub Actions minutes.
+- For the owner, choose your personal account or an organization where you can run Actions and manage workflows.
+- Private repositories consume Actions minutes from the selected owner's allowance.
 - Check the [Actions](../../actions) tab if the exercise issue does not appear after 20 seconds.
 - Run `bun install`, `bun run typecheck`, and `bun test` locally to reproduce grading feedback.
+- If the template itself appears broken, [open an issue in the source repository](https://github.com/ragmha/build-your-harness/issues).
 
 </details>
 
