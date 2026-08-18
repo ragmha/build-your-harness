@@ -35,6 +35,7 @@ Read more:
 
    - Default to 8 model steps.
    - Combine the optional caller signal with a timeout signal.
+   - Build each `ModelRequest` with `tools.definitions()` so the model sees only allowlisted tools and their JSON schemas.
    - Emit `run.started`, model, tool, finish, and failure trace events in order.
    - Append each assistant response to message history.
    - Execute tool calls sequentially and append `tool` messages with `JSON.stringify(result)`.
@@ -49,7 +50,7 @@ Read more:
    bun run grade:step2
    ```
 
-   Expected outcome: five tests pass, including valid execution, invalid arguments, unknown tools, step limits, and timeout cancellation.
+   Expected outcome: seven tests pass, including tool advertisement, valid execution, invalid arguments, unknown tools, step limits, caller cancellation, timeout cancellation, and success/failure traces.
 
 1. Commit and push to `main`.
 
@@ -59,3 +60,4 @@ Read more:
 - `AbortSignal.any` and `AbortSignal.timeout` can combine cancellation sources.
 - Put model and tool calls inside the same error boundary so `run.failed` is always emitted.
 - The final assistant response counts as a model step.
+- If a push does not start grading, open the Actions tab and run the enabled **Step 2** workflow manually.

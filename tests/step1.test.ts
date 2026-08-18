@@ -25,7 +25,9 @@ describe("Step 1: scripted model", () => {
   test("reports exhaustion with a typed error", async () => {
     const model = new ScriptedModel([]);
 
-    await expect(model.complete(request, new AbortController().signal)).rejects.toMatchObject({
+    await expect(
+      model.complete(request, new AbortController().signal),
+    ).rejects.toMatchObject({
       name: "HarnessError",
       code: "MODEL_EXHAUSTED",
     } satisfies Partial<HarnessError>);
@@ -36,7 +38,10 @@ describe("Step 1: scripted model", () => {
     controller.abort("stop");
 
     await expect(
-      new ScriptedModel([{ content: "unused" }]).complete(request, controller.signal),
+      new ScriptedModel([{ content: "unused" }]).complete(
+        request,
+        controller.signal,
+      ),
     ).rejects.toMatchObject({ code: "ABORTED" });
   });
 });

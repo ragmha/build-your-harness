@@ -10,8 +10,13 @@ describe("Step 3: skills and evaluations", () => {
     const skill = await loadSkill(resolve(root, "fixtures/sample-skill"));
 
     expect(skill.instructions).toContain("Synthetic Code Helper");
-    expect(skill.references.map((reference) => reference.path)).toEqual(["references/codes.md"]);
-    expect(renderSkillPrompt(skill)).toContain("Reference: references/codes.md");
+    expect(skill.references.map((reference) => reference.path)).toEqual([
+      "references/aliases.md",
+      "references/codes.md",
+    ]);
+    expect(renderSkillPrompt(skill)).toContain(
+      "Reference: references/codes.md",
+    );
   });
 
   test("runs every deterministic case and aggregates a report", async () => {
@@ -23,5 +28,25 @@ describe("Step 3: skills and evaluations", () => {
     expect(report.results).toHaveLength(2);
     expect(report.results.every((result) => result.passed)).toBeTrue();
     expect(new Date(report.generatedAt).toISOString()).toBe(report.generatedAt);
+  });
+
+  test("counts output mismatches as failed cases", async () => {
+    const skill = await loadSkill(resolve(root, "fixtures/sample-skill"));
+    const report = await runEvaluations(skill, [
+      {
+        id: "intentional-mismatch",
+        prompt: "Return the scripted output.",
+        expectedOutput: "expected",
+        script: [{ content: "actual" }],
+      },
+    ]);
+
+    expect(report.totals).toEqual({ cases: 1, passed: 0, failed: 1 });
+    expect(report.results[0]).toMatchObject({
+      id: "intentional-mismatch",
+      passed: false,
+      expectedOutput: "expected",
+      actualOutput: "actual",
+    });
   });
 });

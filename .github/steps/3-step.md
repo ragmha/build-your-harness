@@ -52,7 +52,7 @@ Read more:
    bun run eval
    ```
 
-   Expected outcome: the loader and evaluation tests pass, the CLI prints `{"cases":2,"passed":2,"failed":0}`, and `reports/eval-report.json` contains the same totals plus per-case results.
+   Expected outcome: three loader and evaluation tests pass, the CLI prints `{"cases":2,"passed":2,"failed":0}`, and `reports/eval-report.json` contains the same totals plus per-case results.
 
 1. Run the complete suite:
 
@@ -67,3 +67,4 @@ Read more:
 - `new Bun.Glob("references/**/*.md").scan({ cwd: root })` can discover reference files.
 - Normalize Windows path separators before storing report paths.
 - Do not reuse one `ScriptedModel` across cases; its cursor is stateful.
+- If a push does not start grading, open the Actions tab and run the enabled **Step 3** workflow manually.
