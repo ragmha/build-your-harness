@@ -31,7 +31,7 @@ Copy the exercise to your account. Give Mona about 20 seconds to prepare the fir
 
 ### Recommended: open a Codespace
 
-Like the [Secure Code Game](https://github.com/skills/secure-code-game#getting-started), this exercise is configured to run in the browser with no manual tool installation.
+This repository includes a Dev Container, so you can run the exercise in a browser without manually installing the toolchain.
 
 1. In your copied repository, select **Code**.
 2. Open the **Codespaces** tab and select **Create codespace on main**.
@@ -152,4 +152,8 @@ bun run eval
 
 ## Continue learning
 
-The production failure-mode framing in [Hendrixer/harness-engineering](https://github.com/Hendrixer/harness-engineering) is a useful next read: durability, state/history/context separation, policy gates, resumable approvals, and recovery. That course uses production libraries in later lessons; this exercise intentionally implements only the core contracts and runtime loop directly, without an agent SDK.
+- [Bun documentation](https://bun.sh/docs) for the runtime, package manager, and test runner.
+- [TypeScript documentation](https://www.typescriptlang.org/docs/) for strict typing and discriminated unions.
+- [Zod documentation](https://zod.dev/) and [JSON Schema 2020-12](https://json-schema.org/draft/2020-12) for runtime validation and model-facing schemas.
+- [WHATWG AbortController and AbortSignal](https://dom.spec.whatwg.org/#abortcontroller) for cancellation primitives.
+- [Model Context Protocol tools](https://modelcontextprotocol.io/specification/latest/server/tools) for an optional comparison with standardized tool discovery and invocation. This exercise does not implement MCP or JSON-RPC.

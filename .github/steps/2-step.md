@@ -16,11 +16,14 @@ The key safety boundaries are:
 
 The trace is an execution record, not model context. Keeping those concepts separate makes it possible to add persistence or replay later without automatically sending the entire history back to a model.
 
-Read more:
+Native model tool-call formats vary by provider. This exercise defines a small provider-neutral contract and relies on these official primitives:
 
 - [Zod schemas](https://zod.dev/)
-- [Function calling concepts](https://platform.openai.com/docs/guides/function-calling)
+- [JSON Schema 2020-12](https://json-schema.org/draft/2020-12)
+- [WHATWG AbortController and AbortSignal](https://dom.spec.whatwg.org/#abortcontroller)
 - [Bun and TypeScript](https://bun.sh/docs/runtime/typescript)
+
+For comparison, the [Model Context Protocol tools specification](https://modelcontextprotocol.io/specification/latest/server/tools) standardizes tool discovery and invocation between clients and servers. The local registry in this exercise is not an MCP implementation.
 
 ### Activity: register tools and run the loop
 

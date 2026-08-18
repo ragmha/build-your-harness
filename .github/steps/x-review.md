@@ -55,4 +55,4 @@ You deliberately kept this exercise small, but you can now identify the next har
 - Add a provider adapter behind the existing `ModelAdapter` interface.
 - Compare exact-match evaluation with rubric or property-based scoring.
 - Add an append-only event log, deterministic checkpoints, and idempotency keys without changing the model contract.
-- Review [Bun testing](https://bun.sh/docs/test), [Zod](https://zod.dev/), and [tool-calling concepts](https://platform.openai.com/docs/guides/function-calling).
+- Review [Bun testing](https://bun.sh/docs/test), [Zod](https://zod.dev/), [JSON Schema](https://json-schema.org/draft/2020-12), and the optional [MCP tools specification](https://modelcontextprotocol.io/specification/latest/server/tools).
