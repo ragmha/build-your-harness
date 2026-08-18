@@ -40,7 +40,7 @@ Read more:
    - Persist one stable request for an unresolved approval-required call.
    - Return the same waiting result after runtime reconstruction.
    - Execute only after approval.
-   - Convert rejection into a deterministic denied tool result.
+   - Convert rejection into the same `JSON.stringify({ denied: true, reason })` tool-result shape used for policy denial.
    - Preserve the Step 5 idempotency behavior after approval.
 
 1. Run final grading:

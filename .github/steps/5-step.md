@@ -39,7 +39,7 @@ Read more:
    - Resolve the effect class with `ToolRegistry.effectOf`.
    - Commit `policy.decided` before execution and call the policy fault hook.
    - Reuse persisted decisions after restart.
-   - Convert denial into a deterministic tool result so the model can recover.
+   - Convert denial into a tool message with `JSON.stringify({ denied: true, reason })` so the model can recover.
    - Pass `runId`, `toolCallId`, and the canonical stable idempotency key to the tool.
    - Call the effect-before-commit fault hook after execution but before `tool.completed`.
 

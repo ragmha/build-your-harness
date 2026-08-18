@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import { z } from "zod";
-import type { ModelAdapter } from "../src/core/contracts";
+import type { ModelAdapter, ModelRequest } from "../src/core/contracts";
 import { DurableHarness } from "../src/durable/harness";
 import { InMemoryRunStore } from "../src/durable/in-memory-store";
 import { allowAllPolicy } from "../src/durable/policy";
@@ -82,6 +82,15 @@ describe("Step 4: durability and recovery", () => {
       "hello",
       "first",
     ]);
+
+    const checkpointVersion = stored.checkpoint?.throughVersion ?? 0;
+    const compacted = {
+      ...stored,
+      events: stored.events.filter(
+        (event) => event.version > checkpointVersion,
+      ),
+    };
+    expect(replayStoredRun(compacted)).toEqual(replayed);
   });
 
   test("rejects a reused tool-call ID during replay", async () => {
@@ -190,6 +199,109 @@ describe("Step 4: durability and recovery", () => {
     const stored = await store.read("run-complete");
     expect(stored?.checkpoint?.throughVersion).toBe(stored?.version);
     expect(stored?.checkpoint?.snapshot.state.status).toBe("completed");
+  });
+
+  test("rejects starting the same run ID twice", async () => {
+    const store = new InMemoryRunStore();
+    const harness = new DurableHarness(
+      new ScriptedModel([{ content: "done" }]),
+      new ToolRegistry(),
+      store,
+      allowAllPolicy,
+    );
+    await harness.start("run-existing", [{ role: "user", content: "go" }]);
+
+    await expect(
+      harness.start("run-existing", [{ role: "user", content: "again" }]),
+    ).rejects.toMatchObject({ code: "RUN_EXISTS" });
+  });
+
+  test("processes multiple tool calls sequentially without dropping one", async () => {
+    const store = new InMemoryRunStore();
+    const executionOrder: string[] = [];
+    const orderedTool: Tool<{ value: string }, { value: string }> = {
+      ...echoTool,
+      execute: ({ value }) => {
+        executionOrder.push(value);
+        return { value };
+      },
+    };
+    const result = await new DurableHarness(
+      new ScriptedModel([
+        {
+          content: "",
+          toolCalls: [
+            { id: "call-first", name: "echo", arguments: { value: "first" } },
+            {
+              id: "call-second",
+              name: "echo",
+              arguments: { value: "second" },
+            },
+          ],
+        },
+        { content: "both complete" },
+      ]),
+      new ToolRegistry().register(orderedTool),
+      store,
+      allowAllPolicy,
+    ).start("run-multiple", [{ role: "user", content: "echo both" }]);
+
+    expect(result).toMatchObject({
+      status: "completed",
+      output: "both complete",
+    });
+    expect(executionOrder).toEqual(["first", "second"]);
+    const stored = await store.read("run-multiple");
+    expect(
+      stored?.events
+        .filter((entry) => entry.event.type === "tool.completed")
+        .map((entry) =>
+          entry.event.type === "tool.completed"
+            ? entry.event.toolCall.id
+            : "unreachable",
+        ),
+    ).toEqual(["call-first", "call-second"]);
+  });
+
+  test("projects bounded context on the durable path", async () => {
+    const requests: ModelRequest[] = [];
+    const responses = [
+      {
+        content: "",
+        toolCalls: [
+          { id: "call-context", name: "echo", arguments: { value: "x" } },
+        ],
+      },
+      { content: "done" },
+    ];
+    const model: ModelAdapter = {
+      async complete(request) {
+        requests.push(structuredClone(request));
+        return responses.shift() ?? { content: "unexpected" };
+      },
+    };
+    await new DurableHarness(
+      model,
+      new ToolRegistry().register(echoTool),
+      new InMemoryRunStore(),
+      allowAllPolicy,
+      {
+        context: {
+          instructions: "Durable instructions",
+          historyMessageTarget: 2,
+        },
+      },
+    ).start("run-context", [{ role: "user", content: "echo" }]);
+
+    expect(requests[0]?.messages[0]).toEqual({
+      role: "system",
+      content: "Durable instructions",
+    });
+    expect(requests[1]?.messages.map((message) => message.role)).toEqual([
+      "system",
+      "assistant",
+      "tool",
+    ]);
   });
 
   test("persists failure when the durable step limit is reached", async () => {

@@ -13,6 +13,8 @@ This step introduces four separate objects:
 
 The append-only event list remains authoritative. A checkpoint is only an optimization: recovery must apply every event after `throughVersion`.
 
+Failures are terminal and propagate as thrown `HarnessError`s. `DurableRunResult` therefore represents only completed and waiting runs; resuming a failed run throws its persisted failure.
+
 `InMemoryRunStore` demonstrates optimistic concurrency with `expectedVersion`. It survives reconstruction of `DurableHarness` inside the same process, which is enough to test restart semantics without adding a database.
 
 Read more:
@@ -52,6 +54,26 @@ Read more:
    - Return completed runs without calling the model again.
    - Let the supplied fault hook simulate a process crash without writing a normal failure event.
 
+   Use this control-flow skeleton:
+
+   ```text
+   load events + checkpoint
+   reduce checkpoint + event tail
+   if terminal: return or throw persisted failure
+   if pending tool calls:
+       process the first pending call
+       persist its result
+       checkpoint and reload
+   else:
+       enforce the persisted max-step budget
+       project fresh model context
+       request one model response
+       persist the response before acting on calls
+       checkpoint and reload
+   ```
+
+   Always drain pending tool calls before requesting another model response. A response may contain multiple calls; process them sequentially in their recorded order.
+
 1. Run:
 
    ```bash
@@ -67,5 +89,6 @@ Read more:
 
 - A new run starts at version `0`; its first committed event becomes version `1`.
 - Use `structuredClone` at every store boundary.
+- Checkpoint replay must work from the checkpoint plus its tail even if compacted pre-checkpoint events are unavailable.
 - A crash after a committed model response must resume from its pending calls, not ask for that response again.
 - If a push does not start grading, run the enabled **Step 4** workflow manually.

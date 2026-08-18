@@ -39,7 +39,8 @@ Read more:
 1. Implement `projectContext` in `src/context/project-context.ts`.
 
    - Add the optional instructions as the first system message.
-   - Render facts as `key: value` lines sorted by key.
+   - Render facts as one system message beginning with `Known facts:`.
+   - Follow that heading with `key: value` lines sorted by key.
    - Group an assistant tool-call message with its contiguous tool results.
    - Select the newest complete blocks toward `historyMessageTarget`.
    - Allow the boundary block to exceed the target rather than split a tool exchange.
