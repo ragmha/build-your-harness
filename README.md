@@ -36,7 +36,7 @@ In this exercise, you will:
 | 5 | Policy decisions and idempotent effects | 75–90 minutes |
 | 6 | Durable approvals and safe resume | 75–90 minutes |
 
-The starter project type-checks, but focused methods contain `TODO` markers and throw `Not implemented` errors. Each lesson's tests guide you toward one small, working increment.
+This repository is intentionally the **learner starter**, not the completed solution. Its contracts and scaffolding type-check so setup failures are separate from exercise work, while focused methods contain `TODO` markers and throw `Not implemented` until you complete the relevant lesson. The cumulative tests show which runtime guarantees you have implemented and prevent later steps from breaking earlier ones.
 
 ## How to start this exercise
 
