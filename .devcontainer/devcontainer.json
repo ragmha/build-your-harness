@@ -1,0 +1,22 @@
+{
+  "name": "Build Your Agent Harness",
+  "image": "mcr.microsoft.com/devcontainers/base:ubuntu-24.04",
+  "features": {
+    "ghcr.io/devcontainers/features/node:2.1.0": {
+      "version": "24.19.0",
+      "npmVersion": "12.0.2",
+      "pnpmVersion": "none"
+    }
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": ["oven.bun-vscode", "redhat.vscode-yaml"],
+      "settings": {
+        "typescript.tsdk": "node_modules/typescript/lib",
+        "typescript.enablePromptUseWorkspaceTsdk": true
+      }
+    }
+  },
+  "postCreateCommand": "npm install --global bun@1.3.14 && bun install --frozen-lockfile && bun run typecheck",
+  "remoteUser": "vscode"
+}

@@ -23,7 +23,7 @@ Read more:
 1. Install dependencies:
 
    ```bash
-   bun install
+   bun install --frozen-lockfile
    ```
 
 1. In `src/providers/scripted-model.ts`, implement `ScriptedModel.complete`.

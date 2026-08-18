@@ -11,8 +11,8 @@ The central idea is that **agent systems are workflow systems**: the model propo
 - **What you'll build**: A safe harness that runs scripted model responses, invokes typed read-only tools, loads a local skill, and writes a machine-readable evaluation report.
 - **Prerequisites**:
   - Basic TypeScript knowledge.
-  - [Bun](https://bun.sh/docs/installation) 1.2 or later.
   - A GitHub account with Actions enabled.
+- **Included toolchain**: Bun 1.3.14, TypeScript 7.0.2, Node.js 24.19.0 LTS, and npm 12.0.2.
 - **How long**: About 60 minutes.
 
 In this exercise, you will:
@@ -28,6 +28,40 @@ The starter project type-checks, but focused methods contain `TODO` markers and 
 Copy the exercise to your account. Give Mona about 20 seconds to prepare the first lesson, then refresh the new repository page.
 
 [![Copy Exercise](https://img.shields.io/badge/Copy%20Exercise-%E2%86%92-1f883d?style=for-the-badge&logo=github&labelColor=197935)](https://github.com/new?template_owner=ragmha&template_name=build-your-harness&owner=%40me&name=build-your-harness&description=Build+a+small+AI+agent+harness+from+first+principles+with+TypeScript+and+Bun&visibility=public)
+
+### Recommended: open a Codespace
+
+Like the [Secure Code Game](https://github.com/skills/secure-code-game#getting-started), this exercise is configured to run in the browser with no manual tool installation.
+
+1. In your copied repository, select **Code**.
+2. Open the **Codespaces** tab and select **Create codespace on main**.
+3. Wait for the setup command to finish. It installs the pinned npm and Bun versions, restores dependencies, and confirms the starter type-checks.
+4. Open the exercise issue and begin Step 1.
+
+Codespaces usage counts toward your account's included allowance.
+
+### Local or Dev Container setup
+
+The repository pins its development environment in:
+
+- `.nvmrc`: Node.js 24.19.0 LTS.
+- `.npmrc`: strict engine checks and reproducible package-save defaults.
+- `package.json`: Bun 1.3.14, TypeScript 7.0.2, and supported engine ranges.
+- `.devcontainer/devcontainer.json`: the same Node, npm, Bun, extensions, install, and type-check setup used by Codespaces.
+
+To use the Dev Container locally, install [Docker](https://docs.docker.com/get-docker/), [VS Code](https://code.visualstudio.com/), and the [Dev Containers extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers). Clone your copied repository, open it in VS Code, and select **Dev Containers: Reopen in Container**.
+
+To work without a container:
+
+```bash
+nvm install
+nvm use
+npm install --global npm@12.0.2 bun@1.3.14
+bun install --frozen-lockfile
+bun run typecheck
+```
+
+Use Bun—not npm—to install dependencies and run project scripts. npm is pinned only to provide a consistent Node.js toolchain and bootstrap Bun when needed.
 
 <details>
 <summary>Having trouble?</summary><br/>
@@ -60,7 +94,7 @@ This compact exercise focuses on the runtime core. Production harnesses extend t
 ## Useful commands
 
 ```bash
-bun install
+bun install --frozen-lockfile
 bun run typecheck
 bun run grade:step1
 bun run grade:step2

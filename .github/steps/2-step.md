@@ -57,7 +57,7 @@ Read more:
 ### Hints
 
 - A small local `emit(event)` helper can append to the trace and call `onTrace`.
-- `AbortSignal.any` and `AbortSignal.timeout` can combine cancellation sources.
+- Use an `AbortController` plus `setTimeout` for the deadline, then combine its signal with the optional caller signal using `AbortSignal.any`. Clear the timer in `finally`.
 - Put model and tool calls inside the same error boundary so `run.failed` is always emitted.
 - The final assistant response counts as a model step.
 - If a push does not start grading, open the Actions tab and run the enabled **Step 2** workflow manually.
