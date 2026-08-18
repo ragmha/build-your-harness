@@ -178,3 +178,11 @@ bun run eval
 ### Optional SDK adapter comparison
 
 After completing all six graded steps, try adapting one real provider or SDK behind `ModelAdapter`. Keep `ScriptedModel` as the test double and do not place credentials in the repository. Compare only the boundary mapping: provider messages, tool schemas, tool calls, cancellation, and errors. This appendix is intentionally ungraded because authentication, network availability, model output, and SDK versions are not deterministic.
+
+## Project status
+
+This is an independent personal project maintained by `ragmha`. It is not affiliated with, endorsed by, or sponsored by any employer or organization.
+
+---
+
+© 2025 ragmha • [Code of Conduct](https://www.contributor-covenant.org/version/2/1/code_of_conduct/code_of_conduct.md) • [MIT License](https://gh.io/mit)
