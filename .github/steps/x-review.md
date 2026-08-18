@@ -27,6 +27,18 @@ messages -> model adapter -> response
 
 Frameworks can add persistence, orchestration, hosted tools, and provider integrations, but they still build on these same primitives.
 
+### From seams to plugins
+
+Your model adapter and tool registry are already extension seams: callers depend on contracts rather than concrete providers. Larger runtimes can apply the same idea to every subsystem.
+
+Three useful rules carry forward without adopting a framework:
+
+1. Keep the contract, provider, and consumer roles distinct.
+2. Use one registry as the authority for what the model can discover and what the runtime can execute.
+3. Define event meaning explicitly. Live trace events support observation; durable events must be sufficient to reconstruct model-visible history.
+
+A dynamic plugin loader is deliberately outside this exercise. Add one only when independent capabilities truly need configuration-driven loading, lifecycle cleanup, or replacement at runtime.
+
 ### Production failure modes to recognize
 
 You deliberately kept this exercise small, but you can now identify the next harness responsibilities:

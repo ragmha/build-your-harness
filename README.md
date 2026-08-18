@@ -78,6 +78,51 @@ All examples are synthetic. The harness includes only a deterministic in-memory 
 
 This compact exercise focuses on the runtime core. Production harnesses extend the same primitives with durable checkpoints, idempotency for side effects, context budgets, policy gates, human approval, and resumable workflows. Those are intentionally discussed but not implemented here, keeping the learner focused and the project secret-free.
 
+## Architecture at a glance
+
+```text
+ SKILL.md + references          User prompt
+            \                      /
+             +----> Messages <----+
+                       |
+                       v
+             +------------------+
+             | Bounded agent    |<---- cancel / timeout / max steps
+             | loop             |
+             +--------+---------+
+                      |
+                      v
+             Scripted model adapter
+                 |             |
+          final answer      tool call
+                 |             |
+                 |             v
+                 |      Typed tool registry
+                 |             |
+                 |      Zod validation
+                 |             |
+                 |      Safe lookup tool
+                 |             |
+                 +<----- tool result
+                 |
+                 v
+          Trace events + evaluation report
+```
+
+The model proposes the next semantic action. The harness owns what is allowed to run, validates inputs, enforces limits, records events, and decides when the workflow is complete.
+
+### Why these boundaries?
+
+This exercise treats each boundary as a small **capability seam**:
+
+- A contract defines what a capability promises.
+- A provider implements it, such as `ScriptedModel`.
+- A consumer depends only on the contract, such as `runAgent`.
+- The tool registry is the single source for both schemas advertised to the model and implementations allowed to execute.
+- Trace events describe live execution. A production harness can later persist selected events as durable session facts.
+
+We intentionally stop before dynamic plugin loading, dependency injection, hot reload, and event middleware so the learner can understand the underlying seams first.
+
 ## Project map
 
 | Path | Purpose |
