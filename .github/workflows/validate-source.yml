@@ -34,7 +34,8 @@ jobs:
       - name: Check template markers
         shell: bash
         run: |
-          if git grep -n "replace-me" -- . ':!bun.lock'; then
+          marker="replace""-me"
+          if git grep -n "$marker" -- . ':!bun.lock'; then
             echo "Template marker found."
             exit 1
           fi
