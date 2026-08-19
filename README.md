@@ -95,28 +95,13 @@ This exercise implements the runtime core and its production failure boundaries 
 
 ```mermaid
 flowchart LR
-    skill["SKILL.md + facts + history"] --> ctx["Context projection"]
-    ctx --> model["Scripted model adapter"]
-
+    context["Context<br/>skill + facts + history"] --> model["Model<br/>proposes next step"]
+    model -- "tool call" --> gate{"Policy gate"}
     model -- "final answer" --> events
-    model -- "tool call" --> policy{"Policy gate"}
-
-    policy -- "allow" --> registry
-    policy -- "require_approval" --> approval["Durable approval<br/>run pauses"]
-    policy -- "deny" --> events
-
-    approval -- "approve" --> registry
-    approval -- "reject" --> events
-
-    registry["Tool registry<br/>Zod validation"] --> result["Tool result"]
-    result --> model
-    result --> events
-
-    events["Semantic events"] --> reducer["Reducer"]
-    reducer --> state["Current state"]
-    state --> store[("Checkpoint + store")]
-    store --> restart["Restart + resume"]
-    restart --> ctx
+    gate -- "allow" --> tools["Typed tools<br/>schema validated"]
+    gate -- "deny or await approval" --> events
+    tools --> events["Durable events<br/>state + checkpoints"]
+    events -- "resume" --> context
 ```
 
 The model proposes the next semantic action. The harness owns what is allowed to run, validates inputs, enforces limits, records events, and decides when the workflow is complete.
