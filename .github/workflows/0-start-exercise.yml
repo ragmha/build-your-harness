@@ -73,7 +73,10 @@ jobs:
     steps:
       - name: Disable Step 0 and enable Step 1
         run: |
-          gh workflow disable "${{ github.workflow }}" --repo "${{ github.repository }}"
+          # start-exercise.yml already disables every numbered workflow, so this
+          # disable usually fails with "could not find any workflows named Step 0".
+          # Tolerate that failure so enabling Step 1 always runs.
+          gh workflow disable "${{ github.workflow }}" --repo "${{ github.repository }}" || true
           gh workflow enable "Step 1" --repo "${{ github.repository }}"
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

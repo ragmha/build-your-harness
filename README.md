@@ -51,7 +51,7 @@ This repository includes a Dev Container, so you can run the exercise in a brows
 1. In your copied repository, select **Code**.
 2. Open the **Codespaces** tab and select **Create codespace on main**.
 3. Wait for the setup command to finish. It installs the pinned Bun version, restores dependencies, and confirms the starter type-checks.
-4. Open the exercise issue and begin Step 1.
+4. Open the exercise issue and begin Step 1. The issue also contains a one-click Codespaces badge for your own copy.
 
 Codespaces usage counts toward your account's included allowance.
 

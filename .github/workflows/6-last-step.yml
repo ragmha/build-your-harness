@@ -12,7 +12,10 @@ env:
 jobs:
   find_exercise:
     name: Find Exercise Issue
-    if: ${{ github.repository != 'ragmha/build-your-harness' }}
+    # "Initial commit" is the commit GitHub creates when the template is copied.
+    # Step 0 handles that push; grading before the exercise issue exists only
+    # produces a failed run in the learner's brand-new repository.
+    if: ${{ github.repository != 'ragmha/build-your-harness' && github.event.head_commit.message != 'Initial commit' }}
     permissions:
       issues: read
     uses: skills/exercise-toolkit/.github/workflows/find-exercise-issue.yml@eca07ac3f4900e6112150366ac9e89cdf09e30e6 # v0.9.1
@@ -149,7 +152,7 @@ jobs:
 
     steps:
       - name: Disable Step 6
-        run: gh workflow disable "${{ github.workflow }}" --repo "${{ github.repository }}"
+        run: gh workflow disable "${{ github.workflow }}" --repo "${{ github.repository }}" || true
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
