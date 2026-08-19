@@ -132,8 +132,13 @@ export async function appendEvent(
   stored: StoredRun,
   event: RunEvent,
 ): Promise<StoredRun> {
+  const runId =
+    stored.events[0]?.runId ?? stored.checkpoint?.snapshot.state.runId;
+  if (!runId) {
+    throw new HarnessError("RUN_NOT_FOUND", "Stored run has no run ID");
+  }
   return await store.commit({
-    runId: stored.events[0]?.runId ?? "",
+    runId,
     expectedVersion: stored.version,
     events: [event],
   });

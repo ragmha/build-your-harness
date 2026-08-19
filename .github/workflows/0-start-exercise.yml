@@ -64,14 +64,16 @@ jobs:
           file: exercise-toolkit/markdown-templates/step-feedback/watching-for-progress.md
 
   advance_workflows:
-    name: Enable Step 1
+    name: Advance workflows
     needs: [post_next_step_content]
     runs-on: ubuntu-latest
     permissions:
       actions: write
 
     steps:
-      - name: Enable Step 1
-        run: gh workflow enable "Step 1" --repo "${{ github.repository }}"
+      - name: Disable Step 0 and enable Step 1
+        run: |
+          gh workflow disable "${{ github.workflow }}" --repo "${{ github.repository }}"
+          gh workflow enable "Step 1" --repo "${{ github.repository }}"
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

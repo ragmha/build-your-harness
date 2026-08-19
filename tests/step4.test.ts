@@ -1,7 +1,7 @@
 import { describe, expect, test } from "bun:test";
 import { z } from "zod";
 import type { ModelAdapter, ModelRequest } from "../src/core/contracts";
-import { DurableHarness } from "../src/durable/harness";
+import { appendEvent, DurableHarness } from "../src/durable/harness";
 import { InMemoryRunStore } from "../src/durable/in-memory-store";
 import { allowAllPolicy } from "../src/durable/policy";
 import { replayStoredRun } from "../src/durable/reducer";
@@ -16,6 +16,16 @@ const echoTool: Tool<{ value: string }, { value: string }> = {
 };
 
 describe("Step 4: durability and recovery", () => {
+  test("rejects appending to stored data without a run identity", async () => {
+    await expect(
+      appendEvent(
+        new InMemoryRunStore(),
+        { version: 0, events: [] },
+        { type: "run.completed", output: "orphaned" },
+      ),
+    ).rejects.toMatchObject({ code: "RUN_NOT_FOUND" });
+  });
+
   test("stores immutable events and rejects stale writers", async () => {
     const store = new InMemoryRunStore();
     const initialMessages = [{ role: "user" as const, content: "hello" }];
