@@ -1,0 +1,46 @@
+[
+  {
+    "id": "lookup-alpha",
+    "prompt": "What does ALPHA mean?",
+    "expectedOutput": "Alpha is the first synthetic entry.",
+    "script": [
+      {
+        "content": "",
+        "toolCalls": [
+          {
+            "id": "call-alpha",
+            "name": "lookup_code",
+            "arguments": {
+              "code": "alpha"
+            }
+          }
+        ]
+      },
+      {
+        "content": "Alpha is the first synthetic entry."
+      }
+    ]
+  },
+  {
+    "id": "lookup-missing",
+    "prompt": "What does CHARLIE mean?",
+    "expectedOutput": "Code not found.",
+    "script": [
+      {
+        "content": "",
+        "toolCalls": [
+          {
+            "id": "call-charlie",
+            "name": "lookup_code",
+            "arguments": {
+              "code": "CHARLIE"
+            }
+          }
+        ]
+      },
+      {
+        "content": "Code not found."
+      }
+    ]
+  }
+]

@@ -1,36 +1,52 @@
-## Step 1: (replace-me: STEP-NAME)
+## Step 1: Define the model boundary
 
-(replace-me: OPTIONAL Brief story or scenario to introduce the step)
+Agent frameworks begin with a small boundary: messages go in and a model response comes out. Keeping that boundary provider-neutral lets the rest of the harness work with a real API, a local model, or the deterministic adapter used here.
 
-(replace-me: OPTIONAL Reference images from the `.github/images/` directory to support any part of the content)
+### Theory: contracts before providers
 
-<img width="200" alt="descriptive alt text" src="../images/inspectocat.png" />
+Open these files:
 
-### 📖 Theory: (replace-me: Theory title)
+- `src/core/contracts.ts` defines messages, tool calls, model requests, responses, and `ModelAdapter`.
+- `src/core/errors.ts` defines typed harness failures.
+- `src/providers/scripted-model.ts` stores a fixed sequence of responses.
 
-<!-- GitHub-styled notifications can be used outside of ordered lists. Available options are: NOTE, IMPORTANT, WARNING, TIP, CAUTION -->
-<!--
-> [!NOTE]
-> (Important note or additional information relevant to this section)
- -->
+`ScriptedModel` is deliberately simple. Each `complete` call consumes one response. There is no API key, randomness, network call, or hidden global state, which makes every test repeatable.
 
-(replace-me: Optional theory or background information relevant to this step)
+Read more:
 
+- [TypeScript interfaces](https://www.typescriptlang.org/docs/handbook/2/objects.html)
+- [AbortSignal](https://developer.mozilla.org/en-US/docs/Web/API/AbortSignal)
+- [Bun test runner](https://bun.sh/docs/test)
 
-### ⌨️ Activity: (replace-me: Activity title)
+### Activity: implement the scripted adapter
 
-1. (replace-me: First instruction)
+1. Install dependencies:
 
-    (replace-me: Make sure to properly indent any multiline instructions)
+   ```bash
+   bun install --frozen-lockfile
+   ```
 
-1. (replace-me: Second instruction)
+1. In `src/providers/scripted-model.ts`, implement `ScriptedModel.complete`.
 
-1. (replace-me: Additional instructions as needed)
+   - If `signal.aborted` is true, throw a `HarnessError` with code `ABORTED`.
+   - Read the response at `#cursor`, then increment the cursor.
+   - If there is no response, throw a `HarnessError` with code `MODEL_EXHAUSTED`.
+   - Return `structuredClone(response)` so callers cannot mutate the stored script.
 
-<details>
-<summary>Having trouble? 🤷</summary><br/>
+1. Run the focused checks:
 
-- (replace-me: Troubleshooting tip or hint)
-- (replace-me: Additional troubleshooting tips as needed)
+   ```bash
+   bun run typecheck
+   bun run grade:step1
+   ```
 
-</details>
+   Expected outcome: TypeScript reports no errors and all three Step 1 tests pass.
+
+1. Commit and push your changes to `main`. The exercise will grade the push and post Step 2 only after the checks pass.
+
+### Hints
+
+- Check cancellation before consuming a response.
+- Use the existing `HarnessError` rather than a plain `Error`.
+- `remaining` should reach zero after the last scripted response is consumed.
+- If a push does not start grading, open the Actions tab and run the enabled **Step 1** workflow manually.

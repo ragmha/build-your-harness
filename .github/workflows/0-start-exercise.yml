@@ -1,53 +1,53 @@
-name: Step 0 # Start Exercise
+name: Step 0
 
 on:
   workflow_dispatch:
-  # NOTE: Make sure the repository is a template before enabling this trigger.
-  # push:
-  #   branches:
-  #     - main
-
-permissions:
-  contents: write
-  actions: write
-  issues: write
+  push:
+    branches:
+      - main
 
 env:
   STEP_1_FILE: ".github/steps/1-step.md"
 
 jobs:
   start_exercise:
-    if: |
-      !github.event.repository.is_template
+    permissions:
+      contents: write
+      actions: write
+      issues: write
+    if: ${{ !github.event.repository.is_template && github.repository != 'ragmha/build-your-harness' }}
     name: Start Exercise
-    uses: skills/exercise-toolkit/.github/workflows/start-exercise.yml@v0.9.1
+    uses: skills/exercise-toolkit/.github/workflows/start-exercise.yml@eca07ac3f4900e6112150366ac9e89cdf09e30e6 # v0.9.1
     with:
-      exercise-title: "(replace-me: Exercise title)"
-      intro-message: "(replace-me: Brief one line introduction message for the exercise)"
+      exercise-title: "Build Your Agent Harness"
+      intro-message: "Build a deterministic, provider-neutral AI agent harness from first principles with TypeScript and Bun."
 
   post_next_step_content:
-    name: Post next step content
+    name: Post Step 1
     runs-on: ubuntu-latest
     needs: [start_exercise]
+    permissions:
+      contents: read
+      issues: write
     env:
       ISSUE_NUMBER: ${{ needs.start_exercise.outputs.issue-number }}
       ISSUE_REPOSITORY: ${{ github.repository }}
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
         with:
           ref: main
 
       - name: Get response templates
-        uses: actions/checkout@v6
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
         with:
           repository: skills/exercise-toolkit
           path: exercise-toolkit
-          ref: v0.9.1
+          ref: eca07ac3f4900e6112150366ac9e89cdf09e30e6 # v0.9.1
 
-      - name: Create comment - add step content
-        uses: GrantBirki/comment@v2.1.1
+      - name: Post Step 1
+        uses: GrantBirki/comment@608e41b19bc973020ec0e189ebfdae935d7fe0cc # v2.1.1
         with:
           repository: ${{ env.ISSUE_REPOSITORY }}
           issue-number: ${{ env.ISSUE_NUMBER }}
@@ -56,15 +56,24 @@ jobs:
             login: ${{ github.actor }}
             full_repo_name: ${{ github.repository }}
 
-      - name: Create comment - watching for progress
-        uses: GrantBirki/comment@v2.1.1
+      - name: Post progress watcher
+        uses: GrantBirki/comment@608e41b19bc973020ec0e189ebfdae935d7fe0cc # v2.1.1
         with:
           repository: ${{ env.ISSUE_REPOSITORY }}
           issue-number: ${{ env.ISSUE_NUMBER }}
           file: exercise-toolkit/markdown-templates/step-feedback/watching-for-progress.md
 
-      - name: Enable next step workflow
+  advance_workflows:
+    name: Advance workflows
+    needs: [post_next_step_content]
+    runs-on: ubuntu-latest
+    permissions:
+      actions: write
+
+    steps:
+      - name: Disable Step 0 and enable Step 1
         run: |
-          gh workflow enable "Step 1"
+          gh workflow disable "${{ github.workflow }}" --repo "${{ github.repository }}"
+          gh workflow enable "Step 1" --repo "${{ github.repository }}"
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
