@@ -31,6 +31,27 @@ jobs:
       - name: Lint workflows
         run: go run github.com/rhysd/actionlint/cmd/actionlint@914e7df21a07ef503a81201c76d2b11c789d3fca -color
 
+      - name: Confirm exercise source is a template repository
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: bash
+        run: |
+          is_template="$(gh repo view "${{ github.repository }}" --json isTemplate --jq .isTemplate)"
+          if [ "$is_template" != "true" ]; then
+            echo "::error::Copy Exercise silently creates an empty repository unless this repo is a template. Enable Settings -> General -> Template repository."
+            exit 1
+          fi
+
+      - name: Confirm advance steps tolerate already-disabled workflows
+        shell: bash
+        run: |
+          # start-exercise.yml disables every numbered workflow, so a bare
+          # `gh workflow disable` fails and prevents the next step from being enabled.
+          if git grep -n 'gh workflow disable' -- .github/workflows ':!.github/workflows/validate-source.yml' | grep -v '|| true'; then
+            echo "::error::Every 'gh workflow disable' must end with '|| true' so the next step is still enabled."
+            exit 1
+          fi
+
       - name: Check template markers
         shell: bash
         run: |

@@ -2,6 +2,16 @@
 
 Agent frameworks begin with a small boundary: messages go in and a model response comes out. Keeping that boundary provider-neutral lets the rest of the harness work with a real API, a local model, or the deterministic adapter used here.
 
+### Set up your workspace
+
+This repository ships a Dev Container, so you do not have to install the toolchain by hand.
+
+[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/{{ full_repo_name }}?quickstart=1)
+
+Select the badge above, or open **Code → Codespaces → Create codespace on main**. Setup installs Bun 1.3.14, restores dependencies, and type-checks the starter, so wait for it to finish before running commands. Codespaces usage counts toward your account's included allowance.
+
+Prefer to stay local? Install [Bun](https://bun.sh/docs/installation) 1.3.14, clone this repository, and run `bun install --frozen-lockfile`.
+
 ### Theory: contracts before providers
 
 Open these files:
