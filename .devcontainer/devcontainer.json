@@ -2,7 +2,9 @@
   "name": "Build Your Agent Harness",
   "image": "mcr.microsoft.com/devcontainers/base:ubuntu-24.04",
   "containerEnv": {
-    "BUN_INSTALL": "/home/vscode/.bun",
+    "BUN_INSTALL": "/home/vscode/.bun"
+  },
+  "remoteEnv": {
     "PATH": "/home/vscode/.bun/bin:${containerEnv:PATH}"
   },
   "customizations": {
