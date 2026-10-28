@@ -17,9 +17,9 @@ export function initialSnapshot(runId: string): RunSnapshot {
       maxSteps: 0,
       pendingToolCalls: [],
       seenToolCallIds: [],
-      policyDecisions: {},
-      approvalRequests: {},
-      approvalResolutions: {},
+      policyDecisions: Object.create(null),
+      approvalRequests: Object.create(null),
+      approvalResolutions: Object.create(null),
     },
     history: [],
   };
@@ -29,12 +29,70 @@ export function applyRunEvent(
   snapshot: RunSnapshot,
   event: RunEvent,
 ): RunSnapshot {
-  // TODO(step-4): Apply one immutable event to the current state and history.
-  // Reject reused tool-call IDs, append only message-bearing events to
-  // history, and derive pending calls and terminal status.
-  void snapshot;
-  void event;
-  throw new Error("Not implemented: applyRunEvent");
+  const next = structuredClone(snapshot);
+  const { state, history } = next;
+
+  switch (event.type) {
+    case "run.started":
+      state.maxSteps = event.maxSteps;
+      history.push(...structuredClone(event.initialMessages));
+      break;
+    case "model.responded":
+      for (const call of event.response.toolCalls ?? []) {
+        if (state.seenToolCallIds.includes(call.id)) {
+          throw new HarnessError("DUPLICATE_TOOL_CALL", `Tool call "${call.id}" was already used`);
+        }
+        state.seenToolCallIds.push(call.id);
+      }
+      state.steps += 1;
+      state.pendingToolCalls = structuredClone(event.response.toolCalls ?? []);
+      history.push(assistantMessage(event));
+      break;
+    case "policy.decided":
+      Object.defineProperty(state.policyDecisions, event.toolCallId, {
+        value: structuredClone(event.decision),
+        writable: true,
+        enumerable: true,
+        configurable: true,
+      });
+      break;
+    case "approval.requested":
+      Object.defineProperty(state.approvalRequests, event.request.approvalId, {
+        value: structuredClone(event.request),
+        writable: true,
+        enumerable: true,
+        configurable: true,
+      });
+      state.status = "waiting_for_approval";
+      break;
+    case "approval.resolved":
+      Object.defineProperty(state.approvalResolutions, event.resolution.approvalId, {
+        value: structuredClone(event.resolution),
+        writable: true,
+        enumerable: true,
+        configurable: true,
+      });
+      state.status = "running";
+      break;
+    case "tool.completed":
+      state.pendingToolCalls = withoutPendingCall(state.pendingToolCalls, event.toolCall.id);
+      history.push(toolMessage(event.toolCall, event.result));
+      break;
+    case "tool.denied":
+      state.pendingToolCalls = withoutPendingCall(state.pendingToolCalls, event.toolCall.id);
+      history.push(toolMessage(event.toolCall, { denied: true, reason: event.reason }));
+      break;
+    case "run.completed":
+      state.status = "completed";
+      state.output = event.output;
+      break;
+    case "run.failed":
+      state.status = "failed";
+      state.failure = { code: event.code, message: event.message };
+      break;
+  }
+
+  return next;
 }
 
 export function replayEvents(
@@ -42,12 +100,20 @@ export function replayEvents(
   events: readonly EventEnvelope[],
   checkpoint?: RunCheckpoint,
 ): RunSnapshot {
-  // TODO(step-4): Begin at the checkpoint when present, then apply only the
-  // event tail after checkpoint.throughVersion.
-  void runId;
-  void events;
-  void checkpoint;
-  throw new Error("Not implemented: replayEvents");
+  const start = checkpoint ? structuredClone(checkpoint.snapshot) : initialSnapshot(runId);
+  const throughVersion = checkpoint?.throughVersion ?? 0;
+  return events
+    .filter((entry) => entry.version > throughVersion)
+    .reduce((snapshot, entry) => applyRunEvent(snapshot, entry.event), start);
+}
+
+function toolMessage(call: ToolCall, result: unknown): Message {
+  return {
+    role: "tool",
+    content: JSON.stringify(result),
+    toolCallId: call.id,
+    name: call.name,
+  };
 }
 
 export function replayStoredRun(stored: StoredRun): RunSnapshot {

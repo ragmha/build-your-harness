@@ -48,11 +48,19 @@ export class ToolRegistry {
   }
 
   async execute(name: string, input: unknown, context: ToolContext): Promise<unknown> {
-    // TODO(step-2): Find the named tool, validate input with safeParse, and
-    // execute it. Throw UNKNOWN_TOOL or INVALID_ARGUMENTS HarnessErrors.
-    void name;
-    void input;
-    void context;
-    throw new Error("Not implemented: ToolRegistry.execute");
+    const tool = this.#tools.get(name);
+    if (!tool) {
+      throw new HarnessError("UNKNOWN_TOOL", `Unknown tool: ${name}`);
+    }
+
+    const parsed = tool.schema.safeParse(input);
+    if (!parsed.success) {
+      const issues = parsed.error.issues
+        .map((issue) => `${issue.path.join(".") || "(input)"}: ${issue.message}`)
+        .join("; ");
+      throw new HarnessError("INVALID_ARGUMENTS", `Invalid arguments for ${name}: ${issues}`);
+    }
+
+    return await tool.execute(parsed.data, context);
   }
 }

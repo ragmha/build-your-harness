@@ -1,6 +1,10 @@
 import { z } from "zod";
-import type { EvaluationCase, EvaluationReport } from "./types";
-import type { LoadedSkill } from "../skills/load-skill";
+import type { EvaluationCase, EvaluationReport, EvaluationResult } from "./types";
+import { renderSkillPrompt, type LoadedSkill } from "../skills/load-skill";
+import { runAgent } from "../core/agent";
+import { ScriptedModel } from "../providers/scripted-model";
+import { ToolRegistry } from "../tools/registry";
+import { lookupCodeTool } from "../tools/lookup-code";
 
 const evaluationCaseSchema = z.object({
   id: z.string().min(1),
@@ -47,12 +51,32 @@ export async function runEvaluations(
   skill: LoadedSkill,
   cases: readonly EvaluationCase[],
 ): Promise<EvaluationReport> {
-  // TODO(step-3): For each case, create a fresh ScriptedModel and ToolRegistry,
-  // run the agent with the rendered skill prompt, and aggregate exact output
-  // matches. A fresh model prevents state leaking between cases.
-  void skill;
-  void cases;
-  throw new Error("Not implemented: runEvaluations");
+  const systemPrompt = renderSkillPrompt(skill);
+  const results: EvaluationResult[] = [];
+
+  for (const evaluationCase of cases) {
+    const model = new ScriptedModel(evaluationCase.script);
+    const tools = new ToolRegistry().register(lookupCodeTool);
+    const run = await runAgent(model, tools, [
+      { role: "system", content: systemPrompt },
+      { role: "user", content: evaluationCase.prompt },
+    ]);
+
+    results.push({
+      id: evaluationCase.id,
+      passed: run.output === evaluationCase.expectedOutput,
+      expectedOutput: evaluationCase.expectedOutput,
+      actualOutput: run.output,
+      steps: run.steps,
+    });
+  }
+
+  const passed = results.filter((result) => result.passed).length;
+  return {
+    generatedAt: new Date().toISOString(),
+    totals: { cases: results.length, passed, failed: results.length - passed },
+    results,
+  };
 }
 
 export async function writeEvaluationReport(

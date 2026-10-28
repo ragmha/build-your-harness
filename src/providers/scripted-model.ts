@@ -10,10 +10,18 @@ export class ScriptedModel implements ModelAdapter {
   }
 
   async complete(_request: ModelRequest, signal: AbortSignal): Promise<ModelResponse> {
-    // TODO(step-1): Respect cancellation, return the next cloned response, and
-    // throw HarnessError("MODEL_EXHAUSTED", ...) when the script is exhausted.
-    void signal;
-    throw new Error("Not implemented: ScriptedModel.complete");
+    if (signal.aborted) {
+      throw new HarnessError("ABORTED", "Model request was cancelled", {
+        cause: signal.reason,
+      });
+    }
+
+    const response = this.#responses[this.#cursor];
+    if (!response) {
+      throw new HarnessError("MODEL_EXHAUSTED", "Scripted model has no responses left");
+    }
+    this.#cursor += 1;
+    return structuredClone(response);
   }
 
   get remaining(): number {

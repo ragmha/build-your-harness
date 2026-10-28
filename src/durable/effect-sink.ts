@@ -7,11 +7,11 @@ export class InMemoryEffectSink<T> {
   readonly #records = new Map<string, T>();
 
   recordOnce(key: string, value: T): { created: boolean; value: T } {
-    // TODO(step-5): Store the first value for an idempotency key and return it
-    // for every retry. Never replace an existing effect.
-    void key;
-    void value;
-    throw new Error("Not implemented: InMemoryEffectSink.recordOnce");
+    if (!this.#records.has(key)) {
+      this.#records.set(key, structuredClone(value));
+      return { created: true, value: structuredClone(value) };
+    }
+    return { created: false, value: structuredClone(this.#records.get(key) as T) };
   }
 
   records(): EffectRecord<T>[] {

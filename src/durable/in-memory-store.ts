@@ -11,16 +11,25 @@ export class InMemoryRunStore implements RunStore {
   readonly #runs = new Map<string, StoredRun>();
 
   async read(runId: string): Promise<StoredRun | undefined> {
-    // TODO(step-4): Return a deep clone so callers cannot mutate the store.
-    void runId;
-    throw new Error("Not implemented: InMemoryRunStore.read");
+    return structuredClone(this.#runs.get(runId));
   }
 
   async commit(request: CommitRequest): Promise<StoredRun> {
-    // TODO(step-4): Enforce expectedVersion, append contiguous envelopes with
-    // stable IDs, preserve any checkpoint, and clone all stored values.
-    void request;
-    throw new Error("Not implemented: InMemoryRunStore.commit");
+    const current = this.#runs.get(request.runId) ?? { version: 0, events: [] };
+    if (request.expectedVersion !== current.version) {
+      throw versionConflict(request.runId, request.expectedVersion, current.version);
+    }
+
+    const events = request.events.map((event, index) =>
+      envelope(request.runId, current.version + index + 1, event),
+    );
+    const next: StoredRun = {
+      ...current,
+      version: current.version + events.length,
+      events: [...current.events, ...events],
+    };
+    this.#runs.set(request.runId, structuredClone(next));
+    return structuredClone(next);
   }
 
   async saveCheckpoint(
@@ -28,12 +37,20 @@ export class InMemoryRunStore implements RunStore {
     expectedVersion: number,
     snapshot: RunSnapshot,
   ): Promise<StoredRun> {
-    // TODO(step-4): Save a snapshot through the current version. Reject stale
-    // writers and clone both input and returned data.
-    void runId;
-    void expectedVersion;
-    void snapshot;
-    throw new Error("Not implemented: InMemoryRunStore.saveCheckpoint");
+    const current = this.#runs.get(runId);
+    if (!current) {
+      throw new HarnessError("RUN_NOT_FOUND", `Run "${runId}" was not found`);
+    }
+    if (expectedVersion !== current.version) {
+      throw versionConflict(runId, expectedVersion, current.version);
+    }
+
+    const next: StoredRun = {
+      ...current,
+      checkpoint: { throughVersion: current.version, snapshot: structuredClone(snapshot) },
+    };
+    this.#runs.set(runId, next);
+    return structuredClone(next);
   }
 }
 

@@ -14,10 +14,10 @@ export class StaticToolPolicy implements PolicyGate {
   ) {}
 
   evaluate(input: PolicyInput): PolicyDecision {
-    // TODO(step-5): Return a clone of the exact-name decision or the
-    // deny-by-default fallback. Policy evaluation must not mutate inputs.
-    void input;
-    throw new Error("Not implemented: StaticToolPolicy.evaluate");
+    const decision = Object.hasOwn(this.decisions, input.call.name)
+      ? this.decisions[input.call.name]
+      : undefined;
+    return structuredClone(decision ?? this.fallback);
   }
 }
 

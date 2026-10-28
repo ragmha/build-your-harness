@@ -1,3 +1,6 @@
+> This `solution` branch holds the finished code from the tutorial at <https://raghib.io/writing/build-your-agent-harness/>, including its demos and coding-agent extension.
+> The `main` branch holds the exercise.
+
 # Build Your Agent Harness
 
 _Build and recover a provider-neutral AI agent harness from first principles in about eight hours._

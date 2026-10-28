@@ -1,3 +1,5 @@
+import { join } from "node:path";
+
 export interface LoadedReference {
   path: string;
   content: string;
@@ -10,10 +12,22 @@ export interface LoadedSkill {
 }
 
 export async function loadSkill(root: string): Promise<LoadedSkill> {
-  // TODO(step-3): Read root/SKILL.md and all .md files under root/references.
-  // Sort references by relative path so prompts and tests stay deterministic.
-  void root;
-  throw new Error("Not implemented: loadSkill");
+  const instructions = await Bun.file(join(root, "SKILL.md")).text();
+
+  const paths: string[] = [];
+  for await (const path of new Bun.Glob("references/**/*.md").scan({ cwd: root })) {
+    paths.push(path.replaceAll("\\", "/"));
+  }
+  paths.sort();
+
+  const references = await Promise.all(
+    paths.map(async (path) => ({
+      path,
+      content: await Bun.file(join(root, path)).text(),
+    })),
+  );
+
+  return { root, instructions, references };
 }
 
 export function renderSkillPrompt(skill: LoadedSkill): string {
